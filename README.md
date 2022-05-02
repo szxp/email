@@ -1,5 +1,5 @@
 
-# MIME multipart email message builder
+# MIME email builder
 
 ## Usage example:
 ```
