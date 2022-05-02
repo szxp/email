@@ -1,8 +1,15 @@
 
 # MIME email builder
 
-## Usage example:
+## Usage:
+
+Import the package:
+```go
+import "github.com/szxp/email"
 ```
+
+Build an email:
+```go
 b := email.NewEmailBuilder()
 b.SetFrom("hello@example.com")
 b.SetTo([]string{
@@ -54,6 +61,12 @@ Content-Type: text/html; charset=utf-8
 <p>See you tomorrow</p>
 --110000000000863a1705ddeb4f86--
 ```
+
+## Godoc
+Available at [https://godoc.org/github.com/szxp/email](https://godoc.org/github.com/szxp/email)
+
+[![GoDoc](https://godoc.org/github.com/szxp/email?status.svg)](https://godoc.org/github.com/szxp/email)
+
 
 ## License
 
