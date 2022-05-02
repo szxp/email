@@ -138,15 +138,10 @@ func (b *EmailBuilder) EncodeQuotedHTML(s []byte) error {
 
 // Write writes a MIME email in wire format.
 func (b *EmailBuilder) Write(w io.Writer) error {
-	boundary, err := b.BoundaryString()
-	if err != nil {
-		return err
-	}
-
-	err = b.Headers.Write(w)
-	if err != nil {
-		return err
-	}
+	text := b.Plain.Len() > 0
+	html := b.HTML.Len() > 0
+	multipart := text && html
+	contentType := b.Headers.Get("Content-Type")
 
 	extraHeaders := make(http.Header)
 	if b.Headers.Get("MIME-Version") == "" {
@@ -157,61 +152,80 @@ func (b *EmailBuilder) Write(w io.Writer) error {
 		extraHeaders.Set("Date", time.Now().Format(time.RFC1123Z))
 	}
 
-	contentType := b.Headers.Get("Content-Type")
-	if contentType == "" {
-		extraHeaders.Set(
-			"Content-Type",
-			fmt.Sprintf(`multipart/alternative; boundary="%s"`, boundary),
-		)
+	var boundary string
+	if multipart {
+		bo, err := b.BoundaryString()
+		if err != nil {
+			return err
+		}
+		boundary = bo
+
+		if contentType == "" {
+			extraHeaders.Set(
+				"Content-Type",
+				fmt.Sprintf(`multipart/alternative; boundary="%s"`, boundary),
+			)
+		}
 	}
 
+	err := b.Headers.Write(w)
+	if err != nil {
+		return err
+	}
 	err = extraHeaders.Write(w)
 	if err != nil {
 		return err
 	}
 
-	err = b.writeln(w)
-	if err != nil {
+	if multipart {
+		err = b.writeln(w)
+		if err != nil {
+			return err
+		}
+
+		err = b.writePartPlain(w, boundary, b.PlainHeaders)
+		if err != nil {
+			return err
+		}
+
+		err = b.writePartHTML(w, boundary, b.HTMLHeaders)
+		if err != nil {
+			return err
+		}
+
+		_, err = w.Write([]byte("--" + boundary + "--"))
 		return err
 	}
 
-	if b.Plain.Len() > 0 {
-		err = b.writePartPlain(w, boundary)
-		if err != nil {
-			return err
-		}
+	if html {
+		return b.writePartHTML(w, "", b.HTMLHeaders)
 	}
 
-	if b.HTML.Len() > 0 {
-		err := b.writePartHTML(w, boundary)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = w.Write([]byte("--" + boundary + "--"))
-	return err
+	return b.writePartPlain(w, "", b.PlainHeaders)
 }
 
-func (b *EmailBuilder) writePartPlain(w io.Writer, boundary string) error {
-	_, err := w.Write([]byte("--" + boundary))
-	if err != nil {
-		return err
-	}
-	err = b.writeln(w)
-	if err != nil {
-		return err
-	}
-
-	err = b.PlainHeaders.Write(w)
-	if err != nil {
-		return err
-	}
-
+func (b *EmailBuilder) writePartPlain(w io.Writer, boundary string, headers http.Header) error {
 	extraHeaders := make(http.Header)
-	if b.PlainHeaders.Get("Content-Type") == "" {
+	if headers.Get("Content-Type") == "" {
 		extraHeaders.Set("Content-Type", "text/plain; charset=utf-8")
 	}
+
+	if boundary != "" {
+		_, err := w.Write([]byte("--" + boundary))
+		if err != nil {
+			return err
+		}
+		err = b.writeln(w)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := headers.Write(w)
+	if err != nil {
+		return err
+	}
+
 	err = extraHeaders.Write(w)
 	if err != nil {
 		return err
@@ -230,25 +244,28 @@ func (b *EmailBuilder) writePartPlain(w io.Writer, boundary string) error {
 	return b.writeln(w)
 }
 
-func (b *EmailBuilder) writePartHTML(w io.Writer, boundary string) error {
-	_, err := w.Write([]byte("--" + boundary))
-	if err != nil {
-		return err
-	}
-	err = b.writeln(w)
-	if err != nil {
-		return err
-	}
-
-	err = b.HTMLHeaders.Write(w)
-	if err != nil {
-		return err
-	}
-
+func (b *EmailBuilder) writePartHTML(w io.Writer, boundary string, headers http.Header) error {
 	extraHeaders := make(http.Header)
-	if b.HTMLHeaders.Get("Content-Type") == "" {
+	if headers.Get("Content-Type") == "" {
 		extraHeaders.Set("Content-Type", "text/html; charset=utf-8")
 	}
+
+	if boundary != "" {
+		_, err := w.Write([]byte("--" + boundary))
+		if err != nil {
+			return err
+		}
+		err = b.writeln(w)
+		if err != nil {
+			return err
+		}
+	}
+
+	err := headers.Write(w)
+	if err != nil {
+		return err
+	}
+
 	err = extraHeaders.Write(w)
 	if err != nil {
 		return err

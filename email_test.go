@@ -60,7 +60,7 @@ func TestEmailBuilder(t *testing.T) {
 			ExpectedHTMLCharset:   "",
 			ExpectedHTMLEncoding:  "",
 			ExpectedHTML:          "",
-			ExpectedBoundary:      "110000000000863a1705ddeb4f86",
+			ExpectedBoundary:      "",
 			NotExpected:           []string{"text/html"},
 		},
 		{
@@ -82,7 +82,7 @@ func TestEmailBuilder(t *testing.T) {
 			ExpectedHTMLCharset:   "",
 			ExpectedHTMLEncoding:  "",
 			ExpectedHTML:          "",
-			ExpectedBoundary:      "110000000000863a1705ddeb4f86",
+			ExpectedBoundary:      "",
 			NotExpected:           []string{"text/html"},
 		},
 		{
@@ -104,7 +104,7 @@ func TestEmailBuilder(t *testing.T) {
 			ExpectedHTMLCharset:   "utf-8",
 			ExpectedHTMLEncoding:  "base64",
 			ExpectedHTML:          "PHA+SGVsbG8gd29ybGQ8L3A+",
-			ExpectedBoundary:      "110000000000863a1705ddeb4f86",
+			ExpectedBoundary:      "",
 			NotExpected:           []string{"text/plain"},
 		},
 		{
@@ -126,7 +126,7 @@ func TestEmailBuilder(t *testing.T) {
 			ExpectedHTMLCharset:   "utf-8",
 			ExpectedHTMLEncoding:  "quoted-printable",
 			ExpectedHTML:          "<p>H=C3=A9ll=C3=B3 world</p>",
-			ExpectedBoundary:      "110000000000863a1705ddeb4f86",
+			ExpectedBoundary:      "",
 			NotExpected:           []string{"text/plain"},
 		},
 		{
@@ -315,13 +315,15 @@ func TestEmailBuilder(t *testing.T) {
 				assert.Contains(t, msg, c.ExpectedHTML+"\r\n")
 			}
 
-			boundary, err := b.BoundaryString()
-			assert.NoError(t, err)
-			assert.Equal(t, c.ExpectedBoundary, boundary)
+			if c.ExpectedBoundary != "" {
+				boundary, err := b.BoundaryString()
+				assert.NoError(t, err)
+				assert.Equal(t, c.ExpectedBoundary, boundary)
 
-			assert.Contains(t, msg, `boundary="`+c.ExpectedBoundary+`"`)
-			assert.Contains(t, msg, "--"+c.ExpectedBoundary)
-			assert.Contains(t, msg, "--"+c.ExpectedBoundary+"--")
+				assert.Contains(t, msg, `boundary="`+c.ExpectedBoundary+`"`)
+				assert.Contains(t, msg, "--"+c.ExpectedBoundary)
+				assert.Contains(t, msg, "--"+c.ExpectedBoundary+"--")
+			}
 
 			if len(c.NotExpected) > 0 {
 				for _, x := range c.NotExpected {
