@@ -37,7 +37,7 @@ msg := w.String()
 fmt.Println(msg)
 ```
 
-## The result is:
+The result is:
 ```
 From: hello@example.com
 Message-Id: myid
