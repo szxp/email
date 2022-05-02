@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-func ExampleEmailBuilder_TextOnly() {
+func ExampleEmailBuilder_textOnly() {
 	b := email.NewEmailBuilder()
 	b.SetFrom("hello@example.com")
 	b.SetTo([]string{
@@ -48,7 +48,7 @@ func ExampleEmailBuilder_TextOnly() {
 	// U2VlIHlvdSB0b21vcnJvdw==
 }
 
-func ExampleEmailBuilder_HTMLOnly() {
+func ExampleEmailBuilder_htmlOnly() {
 	b := email.NewEmailBuilder()
 	b.SetFrom("hello@example.com")
 	b.SetTo([]string{
@@ -89,7 +89,7 @@ func ExampleEmailBuilder_HTMLOnly() {
 	// <p>See you tomorrow</p>
 }
 
-func ExampleEmailBuilder_TextAndHTML() {
+func ExampleEmailBuilder_textAndHTML() {
 	b := email.NewEmailBuilder()
 	b.SetFrom("hello@example.com")
 	b.SetTo([]string{
