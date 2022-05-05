@@ -1,5 +1,5 @@
 
-# MIME email builder
+# MIME email builder for Golang
 
 
 ## Text only email:
@@ -16,7 +16,6 @@ b.SetSubject("See you tomorrow")
 // Add custom headers
 b.Headers.Set("Reply-To", "hello@example.com")
 b.Headers.Set("Return-Path", "bounces@example.com")
-b.Headers.Set("Message-ID", "myid")
 
 b.SetPlainCharset("utf-8")
 b.EncodeBase64Plain([]byte("See you tomorrow"))
@@ -61,7 +60,6 @@ b.SetSubject("See you tomorrow")
 // Add custom headers
 b.Headers.Set("Reply-To", "hello@example.com")
 b.Headers.Set("Return-Path", "bounces@example.com")
-b.Headers.Set("Message-ID", "myid")
 
 b.SetHTMLCharset("utf-8")
 b.EncodeQuotedHTML([]byte("<p>See you tomorrow</p>"))
@@ -106,7 +104,6 @@ b.SetSubject("See you tomorrow")
 // Add custom headers
 b.Headers.Set("Reply-To", "hello@example.com")
 b.Headers.Set("Return-Path", "bounces@example.com")
-b.Headers.Set("Message-ID", "myid")
 
 b.SetPlainCharset("utf-8")
 b.EncodeBase64Plain([]byte("See you tomorrow"))
